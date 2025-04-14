@@ -5,6 +5,7 @@ import Form from './components/Form';
 import UsersList from './components/UsersList';
 import { fetchUsers, LogIn } from './services/usersService';
 import Login from './components/Login';
+import EditUserForm from './components/UsersEdit/formReducer';
 
 interface AppState {
     currentUser: User | null;
@@ -24,6 +25,7 @@ function App() {
     const [newUsersNumber, setNewUsersNumber] = useState<AppState['newUsersNumber']>(0);
     const [isLoggedIn, setIsLoggedIn] = useState<AppState['isLoggedIn']>(false);
     const [currentUser, setCurrentUser] = useState<AppState['currentUser']>(null);
+    const[viewingAllUsers, setViewingAllUsers] = useState<boolean>(false);;
 
     const [uiState, setUiState] = useState<UIState>({
         isDarkMode: false,
@@ -95,6 +97,34 @@ function App() {
         }
     };
 
+    const handleEditUser = async(updatedUser: User) => {
+        try {
+            const refreshedUsers = await fetchUsers();
+            setUsers(refreshedUsers);
+             
+            setUiState((prev) => ({
+                ...prev,
+                newUserName: updatedUser.name,
+                showNotification: true,
+            }));
+            setCurrentUser(null);
+            setViewingAllUsers(true);
+        } catch (error) {
+            console.error('Error updating user:', error);
+        }
+    };
+        
+
+    const handleCancelEditUser=()=>{ 
+        setCurrentUser(null);
+        setViewingAllUsers(true);
+    };
+
+    const handleSelectUser=(user:User)=>{
+        setCurrentUser(user);
+        setViewingAllUsers(false);
+    };
+
     return (
         <div className="App" ref={divRef}>
             {/* Notification Popup */}
@@ -116,14 +146,34 @@ function App() {
                 ) : (
                     <>
                         <h2>Bienvenido, {currentUser?.name}!</h2>
-                        <UsersList users={users} />
-                        <p>New users: {newUsersNumber}</p>
-                        <Form onNewUser={handleNewUser} />
+                       {/* Botón para ir a la lista de usuarios */}
+                       {!viewingAllUsers && (
+                            <button onClick={() => setViewingAllUsers(true)}>Ver todos los usuarios</button>
+                        )}
+                        
+                        {currentUser && !viewingAllUsers ? (
+                            <EditUserForm 
+                                user={currentUser} 
+                                onEditUser={handleEditUser}
+                                onCancel={handleCancelEditUser}
+                            />
+                        ) : (
+                            <>
+                                {/* Mostrar lista de usuarios */}
+                                <UsersList 
+                                    users={users} 
+                                    onEdit={handleSelectUser} 
+                                />
+                                <p>New users: {newUsersNumber}</p>
+                                <Form onNewUser={handleNewUser} />
+                            </>
+                        )}
                     </>
                 )}
             </div>
         </div>
     );
 }
+
 
 export default App;
