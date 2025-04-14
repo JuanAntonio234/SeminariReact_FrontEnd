@@ -47,5 +47,7 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 
 ### Referencias utilizadas
 ChatGPT: para la solución de un error
+
 https://bluuweb.github.io/react-udemy/12-perfil/#actualizar-nombre
+
 Videos de preparación del seminario
